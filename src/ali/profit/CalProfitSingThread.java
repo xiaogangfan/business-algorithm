@@ -11,8 +11,9 @@ import java.util.stream.Stream;
  * created by xiaogangfan
  * on 2018/6/12.
  */
-public class CalProfit {
+public class CalProfitSingThread {
 
+    /**预警值*/
     private double warnValue = 0.3D;
 
     public static void main(String[] args) {
@@ -37,18 +38,18 @@ public class CalProfit {
         profitList.add(profit2);
         profitList.add(profit3);
 
-        CalProfit calProfit = new CalProfit();
+        CalProfitSingThread calProfitSingThread = new CalProfitSingThread();
         long startTime1=System.currentTimeMillis();
-        List<ProfitTime> profitTime = calProfit.getProfitTime(profitList);
+        List<ProfitTimeNode> profitTime = calProfitSingThread.getProfitTime(profitList);
         long endtime1=System.currentTimeMillis();
         System.out.println("所有的时间点 执行时间="+(endtime1-startTime1));
         System.out.println("所有的时间点：");
-        for (ProfitTime time : profitTime) {
+        for (ProfitTimeNode time : profitTime) {
             System.out.print(JSONObject.toJSON(profitTime));
         }
         System.out.println();
         long startTime2=System.currentTimeMillis();
-        Map<Interval, List<Profit>> timeUnit = calProfit.getTimeUnit(profitTime, profitList);
+        Map<Interval, List<Profit>> timeUnit = calProfitSingThread.getTimeUnit(profitTime, profitList);
         long endtime2=System.currentTimeMillis();
         System.out.println("所有的时间段和对应的优惠 执行时间="+(endtime2-startTime2));
         System.out.println("所有的时间段和对应的优惠：");
@@ -61,7 +62,7 @@ public class CalProfit {
         }
         System.out.println();
         long startTime3=System.currentTimeMillis();
-        Map<Interval, List<List<Profit>>> allProfitPermutation = calProfit.getAllProfitPermutation(timeUnit);
+        Map<Interval, List<List<Profit>>> allProfitPermutation = calProfitSingThread.getAllProfitPermutation(timeUnit);
         long endtime3=System.currentTimeMillis();
         System.out.println("商品对应所有的时间段的所有组合 执行时间="+(endtime3-startTime3));
         System.out.println("商品对应所有的时间段的所有组合：");
@@ -71,7 +72,7 @@ public class CalProfit {
             System.out.println();
         }
         long startTime4=System.currentTimeMillis();
-        Map<Interval, List<List<Profit>>> intervalListMap = calProfit.calcaluteProfit(allProfitPermutation);
+        Map<Interval, List<List<Profit>>> intervalListMap = calProfitSingThread.calcaluteProfit(allProfitPermutation);
         long endtime4=System.currentTimeMillis();
         System.out.println("触发预警值的优惠组合 执行时间="+(endtime4-startTime4));
         System.out.println("触发预警值的优惠组合：");
@@ -91,21 +92,21 @@ public class CalProfit {
     }
 
 
-    public List<ProfitTime> getProfitTime(List<Profit> profitList){
-        List<ProfitTime> allList = new ArrayList<>(profitList.size()*2);
+    public List<ProfitTimeNode> getProfitTime(List<Profit> profitList){
+        List<ProfitTimeNode> allList = new ArrayList<>(profitList.size()*2);
         for (Profit profit : profitList) {
-            allList.add(new ProfitTime(profit.start, "s"));
-            allList.add(new ProfitTime(profit.end, "e"));
+            allList.add(new ProfitTimeNode(profit.start, "s"));
+            allList.add(new ProfitTimeNode(profit.end, "e"));
         }
         Collections.sort(allList, new ProfitTimeComparator());
         return allList;
     }
 
-    public Map<Interval,List<Profit>> getTimeUnit(List<ProfitTime> profitList,List<Profit> profits){
+    public Map<Interval,List<Profit>> getTimeUnit(List<ProfitTimeNode> profitList, List<Profit> profits){
         Map<Interval,List<Profit>> map = new HashMap<>();
-        ProfitTime pre = profitList.get(0);
+        ProfitTimeNode pre = profitList.get(0);
         for (int i = 1; i < profitList.size(); i++) {
-            ProfitTime curr = profitList.get(i);
+            ProfitTimeNode curr = profitList.get(i);
             if(!(pre.status.equals("e") && curr.status.equals("s"))){
                 Interval interval = new Interval(pre.time.intValue(), curr.time.intValue());
                 List<Profit> list = new ArrayList<>();
@@ -171,9 +172,9 @@ public class CalProfit {
 
 
 }
-class ProfitTimeComparator implements Comparator<ProfitTime> {
+class ProfitTimeComparator implements Comparator<ProfitTimeNode> {
     @Override
-    public int compare(ProfitTime o1, ProfitTime o2) {
+    public int compare(ProfitTimeNode o1, ProfitTimeNode o2) {
         if (o1.time < o2.time) {
             return -1;
         }
@@ -213,12 +214,12 @@ class Profit{
 /**
  * 时间
  */
-class ProfitTime{
+class ProfitTimeNode {
     /**时间*/
     public Long time;
     /**s:start e:end*/
     public String status;
-    public ProfitTime(Long time,String status){
+    public ProfitTimeNode(Long time, String status){
         this.time = time;
         this.status = status;
     }
