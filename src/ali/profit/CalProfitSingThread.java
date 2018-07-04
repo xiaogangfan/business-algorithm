@@ -1,7 +1,5 @@
 package ali.profit;
 
-import com.alibaba.fastjson.JSONObject;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,50 +40,53 @@ public class CalProfitSingThread {
         long startTime1=System.currentTimeMillis();
         List<ProfitTimeNode> profitTime = calProfitSingThread.getProfitTime(profitList);
         long endtime1=System.currentTimeMillis();
-        System.out.println("所有的时间点 执行时间="+(endtime1-startTime1));
-        System.out.println("所有的时间点：");
-        for (ProfitTimeNode time : profitTime) {
-            System.out.print(JSONObject.toJSON(profitTime));
-        }
-        System.out.println();
+
         long startTime2=System.currentTimeMillis();
-        Map<Interval, List<Profit>> timeUnit = calProfitSingThread.getTimeUnit(profitTime, profitList);
+        Map<Interval, List<Profit>> timeUnit = calProfitSingThread.getInterval(profitTime, profitList);
         long endtime2=System.currentTimeMillis();
-        System.out.println("所有的时间段和对应的优惠 执行时间="+(endtime2-startTime2));
-        System.out.println("所有的时间段和对应的优惠：");
-        for (Map.Entry<Interval, List<Profit>> entry : timeUnit.entrySet()) {
-            System.out.print("时间段="+entry.getKey().toString()+",");
-            for (Profit profit : entry.getValue()) {
-                System.out.print(JSONObject.toJSON(profit));
-            }
-            System.out.println();
-        }
-        System.out.println();
+
         long startTime3=System.currentTimeMillis();
         Map<Interval, List<List<Profit>>> allProfitPermutation = calProfitSingThread.getAllProfitPermutation(timeUnit);
         long endtime3=System.currentTimeMillis();
-        System.out.println("商品对应所有的时间段的所有组合 执行时间="+(endtime3-startTime3));
-        System.out.println("商品对应所有的时间段的所有组合：");
-        for (Map.Entry<Interval, List<List<Profit>>> entry : allProfitPermutation.entrySet()) {
-            System.out.print("时间段="+entry.getKey().toString()+",");
-            System.out.print("组合="+ JSONObject.toJSONString(entry.getValue()));
-            System.out.println();
-        }
+
         long startTime4=System.currentTimeMillis();
         Map<Interval, List<List<Profit>>> intervalListMap = calProfitSingThread.calcaluteProfit(allProfitPermutation);
         long endtime4=System.currentTimeMillis();
-        System.out.println("触发预警值的优惠组合 执行时间="+(endtime4-startTime4));
-        System.out.println("触发预警值的优惠组合：");
-        System.out.println();
-        System.out.println("触发预警值的优惠组合："+intervalListMap);
-        for (Map.Entry<Interval, List<List<Profit>>> entry : intervalListMap.entrySet()) {
-            System.out.print("时间段="+entry.getKey().toString()+",");
-            System.out.print("组合="+ JSONObject.toJSONString(entry.getValue()));
-            System.out.println();
 
-        }
 
         long endtime=System.currentTimeMillis();
+//        System.out.println("所有的时间点 执行时间="+(endtime1-startTime1));
+//        System.out.println("所有的时间点：");
+//        for (ProfitTimeNode time : profitTime) {
+//            System.out.print(JSONObject.toJSON(profitTime));
+//        }
+//        System.out.println();
+//        System.out.println("所有的时间段和对应的优惠 执行时间="+(endtime2-startTime2));
+//        System.out.println("所有的时间段和对应的优惠：");
+//        for (Map.Entry<Interval, List<Profit>> entry : timeUnit.entrySet()) {
+//            System.out.print("时间段="+entry.getKey().toString()+",");
+//            for (Profit profit : entry.getValue()) {
+//                System.out.print(JSONObject.toJSON(profit));
+//            }
+//            System.out.println();
+//        }
+//        System.out.println();
+//        System.out.println("商品对应所有的时间段的所有组合 执行时间="+(endtime3-startTime3));
+//        System.out.println("商品对应所有的时间段的所有组合：");
+//        for (Map.Entry<Interval, List<List<Profit>>> entry : allProfitPermutation.entrySet()) {
+//            System.out.print("时间段="+entry.getKey().toString()+",");
+//            System.out.print("组合="+ JSONObject.toJSONString(entry.getValue()));
+//            System.out.println();
+//        }
+//
+//        System.out.println("时间段和对应 执行时间="+(endtime4-startTime4));
+//        System.out.println("触发预警值的优惠组合：");
+//        for (Map.Entry<Interval, List<List<Profit>>> entry : intervalListMap.entrySet()) {
+//            System.out.print("时间段="+entry.getKey().toString()+",");
+//            System.out.print("组合="+ JSONObject.toJSONString(entry.getValue()));
+//            System.out.println();
+//
+//        }
 
         System.out.println("执行时间="+(endtime-startTime));
 
@@ -102,13 +103,13 @@ public class CalProfitSingThread {
         return allList;
     }
 
-    public Map<Interval,List<Profit>> getTimeUnit(List<ProfitTimeNode> profitList, List<Profit> profits){
+    public Map<Interval,List<Profit>> getInterval(List<ProfitTimeNode> profitList, List<Profit> profits){
         Map<Interval,List<Profit>> map = new HashMap<>();
         ProfitTimeNode pre = profitList.get(0);
         for (int i = 1; i < profitList.size(); i++) {
             ProfitTimeNode curr = profitList.get(i);
             if(!(pre.status.equals("e") && curr.status.equals("s"))){
-                Interval interval = new Interval(pre.time.intValue(), curr.time.intValue());
+                Interval interval = new Interval(pre.time,curr.time);
                 List<Profit> list = new ArrayList<>();
                 for (Profit profit : profits) {
                     if(profit.isContainTime(pre.time,curr.time)){
@@ -125,13 +126,28 @@ public class CalProfitSingThread {
         return map;
     }
 
+    public List<Interval> getInterval(List<ProfitTimeNode> profitList){
+        List<Interval> intervalList = new ArrayList<>();
+        ProfitTimeNode pre = profitList.get(0);
+        for (int i = 1; i < profitList.size(); i++) {
+            ProfitTimeNode curr = profitList.get(i);
+            if(!(pre.status.equals("e") && curr.status.equals("s"))){
+                Interval interval = new Interval(pre.time, curr.time);
+                intervalList.add(interval);
+            }
+            pre = curr;
+        }
+        return intervalList;
+    }
+
     public Map<Interval,List<List<Profit>>> getAllProfitPermutation(Map<Interval,List<Profit>> map){
         Map<Interval,List<List<Profit>>> result = new HashMap<>();
         for (Map.Entry<Interval, List<Profit>> entry : map.entrySet()) {
             List<List<Profit>> profitList = new ArrayList<>();
-            for (int i = 0; i < entry.getValue().size(); i++) {
-                profitList.addAll(Combine.combinations(entry.getValue(),i+1));
-            }
+//            for (int i = 0; i < entry.getValue().size(); i++) {
+//                profitList.addAll(Combine.combinations(entry.getValue(),i+1));
+//            }
+            profitList.add(entry.getValue());
             result.put(entry.getKey(),profitList);
         }
         return result;
@@ -172,18 +188,7 @@ public class CalProfitSingThread {
 
 
 }
-class ProfitTimeComparator implements Comparator<ProfitTimeNode> {
-    @Override
-    public int compare(ProfitTimeNode o1, ProfitTimeNode o2) {
-        if (o1.time < o2.time) {
-            return -1;
-        }
-        if (o1.time > o2.time) {
-            return 1;
-        }
-        return 0;
-    }
-}
+
 
 
 /**
@@ -209,6 +214,11 @@ class Profit{
         }
     }
 
+    @Override
+    public String toString() {
+        return "[start:"+start+",end:"+end+"profit:"+profit+"]";
+    }
+
 }
 
 /**
@@ -222,6 +232,20 @@ class ProfitTimeNode {
     public ProfitTimeNode(Long time, String status){
         this.time = time;
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+            if (obj instanceof ProfitTimeNode) {
+                ProfitTimeNode name = (ProfitTimeNode) obj;
+                return (status.equals(name.status) && time.longValue() == name.time.longValue());
+            }
+            return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return "[time:"+time+",status:"+status+"]";
     }
 }
 
@@ -269,16 +293,42 @@ class Combine {
  * 时间段
  */
 class Interval {
-    public int start;
-    public int end;
+    public Long start;
+    public Long end;
+
+    private final int PRIME = 37;
+
 
     public Interval() {
-        start = 0;
-        end = 0;
+        start = 0L;
+        end = 0L;
     }
 
-    public Interval(int s, int e) {
+    public Interval(Long s, Long e) {
+        if(s == e){
+            return;
+        }
         start = s;
         end = e;
+    }
+
+    @Override
+    public String toString() {
+        return "[start:"+start+",end"+end+"]";
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Interval) {
+            Interval name = (Interval) obj;
+            return (start.longValue()==name.start.longValue()) && (end.longValue() == name.end.longValue());
+        }
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        int hashResult = 1;
+        hashResult = (hashResult + Long.valueOf(start).hashCode() + Long.valueOf(end).hashCode()) * PRIME;
+        return hashResult;
     }
 }
