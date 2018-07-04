@@ -9,6 +9,33 @@ import java.util.*;
  * on 2018/7/3.
  */
 public class ItemProfitPool {
+
+    @Test
+    public void testAddProfit() {
+        long startTime=System.currentTimeMillis();
+        for (int i = 0; i < 500; i++) {
+            Profit profit = new Profit();
+            Random rand =new Random();
+            Random rand1 =new Random();
+
+            profit.start = ((Integer)rand.nextInt(1000)).longValue();
+            profit.end = profit.start+((Integer)rand1.nextInt(50)).longValue();
+//            System.out.println("start="+profit.start+",end="+profit.end);
+
+            addProfit(profit);
+            if(i == 498){
+                startTime = System.currentTimeMillis();
+            }
+        }
+        long endTime=System.currentTimeMillis();
+        System.out.println("执行时间:"+(endTime-startTime));
+//        System.out.println("size:"+map.size());
+//        System.out.println("node:"+timeNodeList);
+        System.out.println("map:"+map);
+    }
+
+
+
     Map<Interval/**Interval*/,Set<Profit>> map = new HashMap<>();
     List<ProfitTimeNode> timeNodeList = new ArrayList<>();
     List<Interval> intervalList = new ArrayList<>();
@@ -94,31 +121,11 @@ public class ItemProfitPool {
         intervalList.stream().parallel().forEach(row -> {
             map.get(row).remove(row);
         });
+        timeNodeList.remove(new ProfitTimeNode(profit.start,"s"));
+        timeNodeList.remove(new ProfitTimeNode(profit.start,"e"));
     }
 
-    @Test
-    public void testAddProfit() {
-        long startTime=System.currentTimeMillis();
-        for (int i = 0; i < 500; i++) {
-            Profit profit = new Profit();
-            Random rand =new Random();
-            Random rand1 =new Random();
 
-            profit.start = ((Integer)rand.nextInt(1000)).longValue();
-            profit.end = profit.start+((Integer)rand1.nextInt(50)).longValue();
-//            System.out.println("start="+profit.start+",end="+profit.end);
-
-            addProfit(profit);
-            if(i == 498){
-                startTime = System.currentTimeMillis();
-            }
-        }
-        long endTime=System.currentTimeMillis();
-        System.out.println("执行时间:"+(endTime-startTime));
-//        System.out.println("size:"+map.size());
-//        System.out.println("node:"+timeNodeList);
-        System.out.println("map:"+map);
-    }
 
 }
 class ProfitTimeComparator implements Comparator<ProfitTimeNode> {
@@ -131,5 +138,49 @@ class ProfitTimeComparator implements Comparator<ProfitTimeNode> {
             return 1;
         }
         return 0;
+    }
+}
+
+/**
+ * 时间段
+ */
+class Interval {
+    public Long start;
+    public Long end;
+
+    private final int PRIME = 37;
+
+
+    public Interval() {
+        start = 0L;
+        end = 0L;
+    }
+
+    public Interval(Long s, Long e) {
+        if(s == e){
+            return;
+        }
+        start = s;
+        end = e;
+    }
+
+    @Override
+    public String toString() {
+        return "[start:"+start+",end:"+end+"]";
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Interval) {
+            Interval name = (Interval) obj;
+            return (start.longValue()==name.start.longValue()) && (end.longValue() == name.end.longValue());
+        }
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        int hashResult = 1;
+        hashResult = (hashResult + Long.valueOf(start).hashCode() + Long.valueOf(end).hashCode()) * PRIME;
+        return hashResult;
     }
 }
