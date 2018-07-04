@@ -40,7 +40,7 @@ public class ItemProfitPool {
     List<Interval> tempIntervalList = new ArrayList<>();
 
     /**
-     * 添加优惠
+     * 单品添加一个优惠
      * @param profit
      */
     public void addProfit (Profit profit){
@@ -158,11 +158,16 @@ public class ItemProfitPool {
         List<Interval> intervalList = findIntervalList(profit.start, profit.end);
         /*删除Interval中的profit*/
         intervalList.stream().parallel().forEach(row -> {
-            map.get(row).remove(row);
+            map.get(row).remove(profit);
+            if(map.get(row).size() == 0){
+                intervalList.remove(row);
+                map.remove(row);
+                /*删除timeNode*/
+                timeNodeList.remove(new ProfitTimeNode(profit.start,"s"));
+                timeNodeList.remove(new ProfitTimeNode(profit.start,"e"));
+            }
         });
-        /*删除timeNode*/
-        timeNodeList.remove(new ProfitTimeNode(profit.start,"s"));
-        timeNodeList.remove(new ProfitTimeNode(profit.start,"e"));
+
     }
 
 
