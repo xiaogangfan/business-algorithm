@@ -99,7 +99,7 @@ public class ItemProfitPool {
     @Test
     public void testAddProfit() {
         long startTime=System.currentTimeMillis();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 500; i++) {
             Profit profit = new Profit();
             Random rand =new Random();
             Random rand1 =new Random();
@@ -109,14 +109,14 @@ public class ItemProfitPool {
 //            System.out.println("start="+profit.start+",end="+profit.end);
 
             addProfit(profit);
-            if(i == 98){
+            if(i == 498){
                 startTime = System.currentTimeMillis();
             }
         }
         long endTime=System.currentTimeMillis();
         System.out.println("Ö´ÐÐÊ±¼ä:"+(endTime-startTime));
-        System.out.println("size:"+map.size());
-        System.out.println("node:"+timeNodeList);
+//        System.out.println("size:"+map.size());
+//        System.out.println("node:"+timeNodeList);
         System.out.println("map:"+map);
     }
 
