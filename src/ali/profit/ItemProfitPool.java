@@ -13,25 +13,25 @@ public class ItemProfitPool {
     @Test
     public void testAddProfit() {
         long startTime=System.currentTimeMillis();
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1000; i++) {
             Profit profit = new Profit();
             Random rand =new Random();
             Random rand1 =new Random();
 
             profit.start = ((Integer)rand.nextInt(1000)).longValue();
             profit.end = profit.start+((Integer)rand1.nextInt(50)).longValue();
-//            System.out.println("start="+profit.start+",end="+profit.end);
 
             addProfit(profit);
-            if(i == 498){
+            if(i == 998){
                 startTime = System.currentTimeMillis();
             }
         }
         long endTime=System.currentTimeMillis();
         System.out.println("Ö´ÐÐÊ±¼ä:"+(endTime-startTime));
-        System.out.println("size:"+map.size());
-//        System.out.println("node:"+timeNodeList);
-        System.out.println("map:"+map);
+//        System.out.println("timeNodeList:"+timeNodeList);
+//        System.out.println("Interval:"+intervalList);
+//        System.out.println("size:"+map.size());
+//        System.out.println("map:"+map);
     }
 
     Map<Interval/**Interval*/,Set<Profit>> map = new HashMap<>();
@@ -101,8 +101,17 @@ public class ItemProfitPool {
     private List<Interval> findIntervalList(Long start, Long end) {
         tempIntervalList.clear();
         int i = timeNodeList.indexOf(new ProfitTimeNode(( start).longValue(), "s"));
+        if(i<0){
+            i = timeNodeList.indexOf(new ProfitTimeNode(( start).longValue(), "e"));
+        }
         int j = timeNodeList.indexOf(new ProfitTimeNode(( end).longValue(), "e"));
-        for (;(i>0 && j>0)&&i<j;i++){
+        if(j < 0){
+            j = timeNodeList.indexOf(new ProfitTimeNode(( end).longValue(), "s"));
+        }
+        if(i<0 || j< 0){
+            System.out.println("i or j can not less than 0");
+        }
+        for (;(i>-1 && j>-1)&&i<j;i++){
             if(timeNodeList.get(i).time.longValue() != timeNodeList.get(i+1).time.longValue()) {
                 tempIntervalList.add(new Interval(timeNodeList.get(i).time, timeNodeList.get(i + 1).time));
             }
